@@ -995,7 +995,7 @@ void loop() {
 
 
 	alarmAuto = valLowAlarm.active | valHighAlarm.active | valInvalidAlarm.active;
-	buzzerAuto = (valLowAlarm.unAck | valHighAlarm.unAck | valInvalidAlarm.unAck) & !(secCnt & 0);
+	buzzerAuto = (valLowAlarm.unAck | valHighAlarm.unAck | valInvalidAlarm.unAck) & (secCnt & 1);
 
 	valUp = getInstrumentControl(valUpAuto, valUpMode);
 	valDown = getInstrumentControl(valDownAuto, valDownMode);
