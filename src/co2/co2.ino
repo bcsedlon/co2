@@ -718,8 +718,16 @@ void saveDefaultEEPROM() {
 void setup()
 {
 	// Add your initialization code here
-	Serial.begin(9600);
+	Serial.begin(128000);
 		while(!Serial);
+
+	//Serial.println("CLEARDATA"); //clears up any data left from previous projects
+	//Serial.println("LABEL,No.,CO2,..."); //always write LABEL, so excel knows the next things will be the names of the columns (instead of Acolumn you could write Time for instance)
+	//Serial.println("RESETTIMER"); //resets timer to 0
+
+	//Serial.begin(128000); // opens serial port, sets data rate128000 bps
+	Serial.println("CLEARDATA"); //clears any residual data
+	Serial.println("LABEL,Time,No.,CO2");
 
 	if( OMEEPROM::saved() )
 		loadEEPROM();
@@ -820,9 +828,39 @@ double analogRead(int pin, int samples){
   return (double)(result / samples);
 }
 
-
-void loop()
+uint i, cnt;
+Interval intv;
+void test()
 {
+	wdt_reset();
+	valRaw = analogRead(PIN_VAL, 100);
+	double valRatio = (double)(valHighY - valLowY) / (double)(valHighX - valLowX);
+	//val = ((double)valHighX - valRaw) / valRatio + (double)valLowY;
+	val = ((valRaw - valLowX) * valRatio + (double)valLowY);
+	//val += ( 0.1 * ((valRaw - valLowX) * valRatio + (double)valLowY) - val);
+	//val = valLowLimit;
+	val = max(val, 0);
+
+	//Serial.println(millis() -i);
+	//i = millis();// - i;
+	//Serial.println(val);
+
+	//Serial.print("DATA,TIME,");
+	//Serial.print(i++);
+	//Serial.print(",");
+	if(intv.expired()) {
+		intv.set(1000);
+		Serial.println(i++);
+		Serial.println(cnt);
+		cnt = 0;
+	}
+	cnt++;
+	Serial.println(val);
+}
+
+
+void loop() {
+
 	wdt_reset();
 
 	//Add your repeated code here
@@ -860,6 +898,20 @@ void loop()
 	//val += ( 0.1 * ((valRaw - valLowX) * valRatio + (double)valLowY) - val);
 	//val = valLowLimit;
 	val = max(val, 0);
+
+	//Serial.println(val);
+
+	//Serial.print("DATA,TIME,TIMER,"); //writes the time in the first column A and the time since the measurements started in column B
+	//Serial.print(i);
+	//Serial.print(val);
+	//Serial.println(); //be sure to add println to the last command so it knows to go into the next row on the second run
+	//delay(100); //add a delay
+
+	//Serial.print("DATA,TIME,");
+	//Serial.print(i++);
+	//Serial.print(",");
+	//Serial.println(val);
+
 
 	valLowAlarm.alarmActiveDelay = alarmDelay * 1000;
 	valLowAlarm.alarmDeactiveDelay = alarmDelay * 1000;
@@ -943,7 +995,7 @@ void loop()
 
 
 	alarmAuto = valLowAlarm.active | valHighAlarm.active | valInvalidAlarm.active;
-	buzzerAuto = (valLowAlarm.unAck | valHighAlarm.unAck) & (secCnt & 1);
+	buzzerAuto = (valLowAlarm.unAck | valHighAlarm.unAck | valInvalidAlarm.unAck) & !(secCnt & 0);
 
 	valUp = getInstrumentControl(valUpAuto, valUpMode);
 	valDown = getInstrumentControl(valDownAuto, valDownMode);
