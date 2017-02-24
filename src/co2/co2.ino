@@ -672,7 +672,7 @@ void loadEEPROM() {
     read(ADDR_ALARMDELAY, alarmDelay);
 }
 
-#define nominal 5.0
+#define nominal 10.0
 void saveDefaultEEPROM() {
 
 	valLowX = 174;
@@ -680,15 +680,16 @@ void saveDefaultEEPROM() {
 	valLowY = 0.04;
 	valHighY = 4.0;
 
-	valUpOn = nominal-0.1;
-	valUpOff = nominal-0.2;
 	valLowLimit = nominal-0.3;
+	valUpOn = nominal-0.2;
+	valUpOff = nominal-0.0;
+
 	valUpPulse = 1.0;
 	valUpPause = 2.0;
 
 	valHighLimit = nominal+0.3;
 	valDownOn = nominal+0.2;
-	valDownOff = nominal+0.1;
+	valDownOff = nominal+0.0;
 	valDownPulse = 1.0;
 	valDownPause = 2.0;
 
